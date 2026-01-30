@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import ClientProfilePanel from './components/ClientProfilePanel'
 import HoldingsTable from './components/HoldingsTable'
 import AgentPanel from './components/AgentPanel'
 import AuditLogPanel from './components/AuditLogPanel'
+import CopilotPopup from './components/CopilotPopup'
 
 function App() {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
@@ -46,6 +47,9 @@ function App() {
           </div>
         </div>
       </main>
+
+      {/* Floating Copilot Popup - Bottom Right */}
+      <CopilotPopup />
     </div>
   )
 }
