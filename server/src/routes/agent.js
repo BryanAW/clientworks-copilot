@@ -5,11 +5,14 @@ import { isOpenAIEnabled, safeChatCompletion } from '../utils/openai.js'
 import { analyzePortfolio, TARGET_ALLOCATIONS } from '../utils/portfolioAnalytics.js'
 import {
   ACTION_COMPOSER_SYSTEM_PROMPT,
+  ACTION_COMPOSER_FEEDBACK_SYSTEM_PROMPT,
   REBALANCE_USER_PROMPT,
   CONCENTRATION_USER_PROMPT,
   CASH_BUCKET_USER_PROMPT,
+  REGENERATE_USER_PROMPT,
   parseActionResponse,
-  generateDeterministicAction
+  generateDeterministicAction,
+  generateAlternativeDeterministicAction
 } from '../prompts/actionComposer.js'
 
 const router = express.Router()
@@ -355,6 +358,140 @@ router.post('/approve', (req, res) => {
       simulationMode: true
     }
   })
+})
+
+// ============================================================================
+// POST /api/agent/regenerate
+// Regenerate a specific action with advisor feedback (pivot)
+// ============================================================================
+
+router.post('/regenerate', async (req, res) => {
+  const { clientId, actionId, feedback } = req.body
+
+  if (!clientId || !actionId) {
+    return res.status(400).json({ error: 'clientId and actionId are required' })
+  }
+
+  // Find the proposal containing this action
+  let foundProposal = null
+  let foundAction = null
+  let actionIndex = -1
+  
+  for (const [propId, proposal] of proposalStore.entries()) {
+    if (proposal.clientId === clientId) {
+      const idx = proposal.actions.findIndex(a => a.id === actionId)
+      if (idx !== -1) {
+        foundProposal = proposal
+        foundAction = proposal.actions[idx]
+        actionIndex = idx
+        break
+      }
+    }
+  }
+  
+  if (!foundAction) {
+    return res.status(404).json({ error: 'Action not found' })
+  }
+  
+  if (foundAction.status === 'APPROVED') {
+    return res.status(400).json({ error: 'Cannot regenerate an approved action' })
+  }
+
+  try {
+    // Track regeneration attempts
+    const attemptNumber = (foundAction.regenerationAttempts || 0) + 1
+    
+    // Fetch fresh market signals
+    const marketSignals = await fetchMarketSignals()
+    
+    // Build regeneration data
+    const regenData = {
+      actionType: foundAction.type,
+      clientName: foundProposal.clientName,
+      riskProfile: foundAction.constraintsChecked[0]?.replace('Risk tolerance: ', '') || 'moderate',
+      marketSignals,
+      previousWhyNow: foundAction.whyNow,
+      previousSteps: foundAction.proposedSteps,
+      previousRiskNotes: foundAction.riskNotes,
+      feedback: feedback || 'The advisor wants a different perspective.',
+      attemptNumber,
+      // Include type-specific data
+      ...(foundAction.type === 'REBALANCE' && { maxDrift: foundAction.metrics.driftPct }),
+      ...(foundAction.type === 'CONCENTRATION' && { 
+        symbol: foundAction.metrics.symbol, 
+        concentrationPct: foundAction.metrics.concentrationPct 
+      }),
+      ...(foundAction.type === 'CASH_BUCKET' && { 
+        goalMonths: foundAction.metrics.goalMonths,
+        currentCashPct: foundAction.metrics.cashPct,
+        requiredCashPct: foundAction.metrics.requiredCashPct
+      })
+    }
+    
+    let newText
+    
+    // Try LLM first if enabled
+    if (isOpenAIEnabled()) {
+      try {
+        const response = await safeChatCompletion({
+          systemPrompt: ACTION_COMPOSER_FEEDBACK_SYSTEM_PROMPT,
+          userPrompt: REGENERATE_USER_PROMPT(regenData),
+          temperature: 0.7, // Higher temperature for more variety
+          maxTokens: 500
+        })
+        
+        if (response) {
+          const parsed = parseActionResponse(response, foundAction.type, regenData)
+          if (parsed.success) {
+            newText = { ...parsed, regenerated: true, attemptNumber }
+          }
+        }
+      } catch (err) {
+        console.warn(`[Agent] LLM regeneration failed: ${err.message}`)
+      }
+    }
+    
+    // Fallback to alternative deterministic templates
+    if (!newText) {
+      newText = generateAlternativeDeterministicAction(foundAction.type, regenData, attemptNumber)
+    }
+    
+    // Update the action in place
+    foundAction.whyNow = newText.whyNow
+    foundAction.proposedSteps = newText.proposedSteps
+    foundAction.riskNotes = newText.riskNotes
+    foundAction.usedLLM = newText.usedLLM
+    foundAction.regenerationAttempts = attemptNumber
+    foundAction.lastFeedback = feedback
+    foundAction.regeneratedAt = new Date().toISOString()
+    
+    // Log audit
+    logAudit({
+      action: 'ACTION_REGENERATED',
+      details: `Regenerated ${foundAction.type} for client ${clientId} (attempt ${attemptNumber})`,
+      metadata: { 
+        clientId, 
+        actionId, 
+        actionType: foundAction.type,
+        feedback,
+        attemptNumber,
+        usedLLM: newText.usedLLM
+      }
+    })
+
+    res.json({
+      success: true,
+      data: {
+        action: foundAction,
+        attemptNumber,
+        usedLLM: newText.usedLLM
+      }
+    })
+    
+  } catch (err) {
+    console.error('[Agent] Regeneration failed:', err)
+    res.status(500).json({ error: 'Failed to regenerate action' })
+  }
 })
 
 // ============================================================================

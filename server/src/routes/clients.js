@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { logAudit } from '../utils/audit.js'
+import { loadClientHoldings } from '../utils/portfolioAnalytics.js'
 
 const router = express.Router()
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -61,58 +62,39 @@ router.get('/:id', (req, res) => {
 
 /**
  * GET /api/clients/:id/holdings
- * Return client holdings
+ * Return client holdings from CSV
  */
 router.get('/:id/holdings', (req, res) => {
   const { id } = req.params
 
-  // TODO: Load holdings from database or CSV file
-  const mockHoldings = [
-    {
-      id: '1',
-      clientId: id,
-      symbol: 'AAPL',
-      name: 'Apple Inc',
-      shares: 500,
-      price: 195.5,
-      value: 97750,
-      allocation: 35,
-      lastUpdated: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      clientId: id,
-      symbol: 'MSFT',
-      name: 'Microsoft Corp',
-      shares: 300,
-      price: 420.25,
-      value: 126075,
-      allocation: 25,
-      lastUpdated: new Date().toISOString(),
-    },
-    {
-      id: '3',
-      clientId: id,
-      symbol: 'VTI',
-      name: 'Vanguard Total Stock Market',
-      shares: 1200,
-      price: 245.0,
-      value: 294000,
-      allocation: 40,
-      lastUpdated: new Date().toISOString(),
-    },
-  ]
+  // Load holdings from CSV file
+  const holdings = loadClientHoldings(id)
+  
+  // Transform to API response format
+  const responseData = holdings.map((h, idx) => ({
+    id: `${id}-${idx}`,
+    clientId: id,
+    symbol: h.symbol,
+    name: h.name,
+    shares: h.shares,
+    price: h.pricePerShare,
+    value: h.currentValue,
+    allocation: h.allocationPct,
+    assetClass: h.assetClass,
+    sector: h.sector,
+    lastUpdated: h.lastUpdated,
+  }))
 
   logAudit({
     action: 'HOLDINGS_RETRIEVED',
-    details: `Retrieved ${mockHoldings.length} holdings for client ${id}`,
+    details: `Retrieved ${responseData.length} holdings for client ${id}`,
     metadata: { clientId: id },
   })
 
   res.json({
     success: true,
-    data: mockHoldings,
-    count: mockHoldings.length,
+    data: responseData,
+    count: responseData.length,
   })
 })
 

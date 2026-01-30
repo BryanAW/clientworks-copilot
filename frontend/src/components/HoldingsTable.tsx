@@ -9,6 +9,8 @@ interface Holding {
   price: number
   value: number
   allocation: number
+  assetClass?: string
+  sector?: string
 }
 
 interface Props {
@@ -18,20 +20,41 @@ interface Props {
 export default function HoldingsTable({ clientId }: Props) {
   const [holdings, setHoldings] = useState<Holding[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // TODO: Fetch holdings from /api/clients/:id/holdings
-    const mockHoldings: Holding[] = [
-      { id: '1', symbol: 'AAPL', name: 'Apple Inc', shares: 500, price: 195.5, value: 97750, allocation: 35 },
-      { id: '2', symbol: 'MSFT', name: 'Microsoft Corp', shares: 300, price: 420.25, value: 126075, allocation: 25 },
-      { id: '3', symbol: 'VTI', name: 'Vanguard Total Stock Market', shares: 1200, price: 245.0, value: 294000, allocation: 40 },
-    ]
-    setHoldings(mockHoldings)
-    setLoading(false)
+    const fetchHoldings = async () => {
+      setLoading(true)
+      setError(null)
+      
+      try {
+        const response = await axios.get(`http://localhost:3000/api/clients/${clientId}/holdings`)
+        if (response.data.success) {
+          setHoldings(response.data.data)
+        } else {
+          setError('Failed to load holdings')
+        }
+      } catch (err: any) {
+        console.error('Error fetching holdings:', err)
+        setError(err.response?.data?.error || 'Failed to connect to server')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchHoldings()
   }, [clientId])
 
   if (loading) {
     return <div className="text-gray-500">Loading holdings...</div>
+  }
+
+  if (error) {
+    return <div className="text-red-500 p-4">{error}</div>
+  }
+
+  if (holdings.length === 0) {
+    return <div className="text-gray-500 p-4">No holdings found for this client</div>
   }
 
   const totalValue = holdings.reduce((sum, h) => sum + h.value, 0)

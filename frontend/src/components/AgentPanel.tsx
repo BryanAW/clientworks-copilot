@@ -31,6 +31,8 @@ interface ActionProposal {
   status?: string
   approvedBy?: string
   approvedAt?: string
+  regenerationAttempts?: number
+  regeneratedAt?: string
 }
 
 interface Proposal {
@@ -63,6 +65,9 @@ export default function AgentPanel({ clientId, onActionApproved }: Props) {
   const [expandedActions, setExpandedActions] = useState<Set<string>>(new Set())
   const [confirmModal, setConfirmModal] = useState<{ action: ActionProposal } | null>(null)
   const [approving, setApproving] = useState(false)
+  const [feedbackModal, setFeedbackModal] = useState<{ action: ActionProposal } | null>(null)
+  const [feedbackText, setFeedbackText] = useState('')
+  const [regenerating, setRegenerating] = useState<string | null>(null)
 
   // Reset when client changes
   useEffect(() => {
@@ -128,6 +133,36 @@ export default function AgentPanel({ clientId, onActionApproved }: Props) {
     } finally {
       setApproving(false)
       setConfirmModal(null)
+    }
+  }
+
+  const handleRegenerate = async (action: ActionProposal) => {
+    if (!clientId) return
+
+    setRegenerating(action.id)
+    
+    try {
+      const response = await axios.post('http://localhost:3000/api/agent/regenerate', {
+        clientId,
+        actionId: action.id,
+        feedback: feedbackText || undefined
+      })
+      
+      if (response.data.success) {
+        // Update action in local state
+        if (proposal) {
+          const updatedActions = proposal.actions.map(a => 
+            a.id === action.id ? response.data.data.action : a
+          )
+          setProposal({ ...proposal, actions: updatedActions })
+        }
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to regenerate action')
+    } finally {
+      setRegenerating(null)
+      setFeedbackModal(null)
+      setFeedbackText('')
     }
   }
 
@@ -329,17 +364,49 @@ export default function AgentPanel({ clientId, onActionApproved }: Props) {
                           </ul>
                         </div>
 
-                        {/* Approve Button */}
+                        {/* Regeneration info */}
+                        {action.regenerationAttempts && action.regenerationAttempts > 0 && (
+                          <div className="mt-3 p-2 bg-purple-50 border border-purple-100 rounded text-xs text-purple-700">
+                            🔄 Regenerated {action.regenerationAttempts} time{action.regenerationAttempts > 1 ? 's' : ''}
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
                         {action.status !== 'APPROVED' && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setConfirmModal({ action })
-                            }}
-                            className="mt-3 w-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded transition"
-                          >
-                            Approve Action
-                          </button>
+                          <div className="mt-3 flex gap-2">
+                            {/* Regenerate / Pivot Button */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setFeedbackModal({ action })
+                              }}
+                              disabled={regenerating === action.id}
+                              className="flex-1 border border-gray-300 hover:bg-gray-50 disabled:bg-gray-100 text-gray-700 text-sm font-medium py-2 px-4 rounded transition flex items-center justify-center gap-1"
+                            >
+                              {regenerating === action.id ? (
+                                <>
+                                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                  </svg>
+                                  Regenerating...
+                                </>
+                              ) : (
+                                <>👎 Try Different Approach</>
+                              )}
+                            </button>
+                            
+                            {/* Approve Button */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setConfirmModal({ action })
+                              }}
+                              className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded transition"
+                            >
+                              👍 Approve
+                            </button>
+                          </div>
                         )}
 
                         {/* Approved Info */}
@@ -352,6 +419,7 @@ export default function AgentPanel({ clientId, onActionApproved }: Props) {
                     )}
                   </div>
                 ))}
+
 
                 {/* Summary Note */}
                 <p className="text-xs text-gray-400 text-center pt-2">
@@ -387,6 +455,53 @@ export default function AgentPanel({ clientId, onActionApproved }: Props) {
                 className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 transition"
               >
                 {approving ? 'Processing...' : 'Approve & Simulate'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback / Regenerate Modal */}
+      {feedbackModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Request Different Approach</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              The AI will generate a new version of: <strong>{feedbackModal.action.title}</strong>
+            </p>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                What didn't work? (optional)
+              </label>
+              <textarea
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                placeholder="e.g., Too aggressive, doesn't consider tax implications, need more conservative approach..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                rows={3}
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Your feedback helps the AI provide a better alternative
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setFeedbackModal(null)
+                  setFeedbackText('')
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleRegenerate(feedbackModal.action)}
+                disabled={regenerating === feedbackModal.action.id}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 transition"
+              >
+                {regenerating === feedbackModal.action.id ? 'Regenerating...' : '🔄 Regenerate'}
               </button>
             </div>
           </div>
