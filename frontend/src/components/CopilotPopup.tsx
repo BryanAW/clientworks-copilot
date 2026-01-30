@@ -374,22 +374,22 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
     <div className="p-3 space-y-3">
       {marketLoading ? (
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full" />
+          <div className="animate-spin h-5 w-5 border-2 border-[#003366] border-t-transparent rounded-full" />
         </div>
       ) : marketSummary ? (
         <>
           {/* Headline */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3">
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
             <p className="text-sm font-medium text-gray-800">{marketSummary.headline}</p>
           </div>
 
           {/* Indices */}
           <div className="grid grid-cols-3 gap-2">
             {marketSummary.indices.map((idx, i) => (
-              <div key={i} className="bg-white border border-gray-100 rounded-lg p-2 text-center">
-                <p className="text-xs text-gray-500">{idx.name}</p>
-                <p className="text-sm font-semibold text-gray-900">{idx.value}</p>
-                <p className={`text-xs font-medium ${idx.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+              <div key={i} className="bg-white border border-gray-200 rounded-lg p-2 text-center shadow-sm">
+                <p className="text-xs text-gray-500 font-medium">{idx.name}</p>
+                <p className="text-sm font-bold text-gray-900">{idx.value}</p>
+                <p className={`text-xs font-semibold ${idx.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                   {idx.change}
                 </p>
               </div>
@@ -398,11 +398,11 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
 
           {/* Key News */}
           <div>
-            <p className="text-xs font-medium text-gray-700 mb-2">Key Headlines</p>
+            <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Key Headlines</p>
             <div className="space-y-1.5">
               {marketSummary.keyNews.map((news, i) => (
                 <div key={i} className="flex items-start gap-2 text-xs text-gray-600">
-                  <span className="text-blue-500 mt-0.5">•</span>
+                  <span className="text-[#003366] mt-0.5">•</span>
                   <span>{news}</span>
                 </div>
               ))}
@@ -425,17 +425,17 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
         </div>
       ) : clientNewsLoading ? (
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full" />
+          <div className="animate-spin h-5 w-5 border-2 border-[#003366] border-t-transparent rounded-full" />
         </div>
       ) : (
         <>
           {/* Holdings Summary */}
           {clientHoldings.length > 0 && (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3">
-              <p className="text-xs font-medium text-gray-700 mb-2">Portfolio Holdings</p>
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+              <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Portfolio Holdings</p>
               <div className="flex flex-wrap gap-1.5">
                 {clientHoldings.slice(0, 6).map((h, i) => (
-                  <span key={i} className="px-2 py-1 bg-white border border-green-200 rounded text-xs font-medium text-gray-700">
+                  <span key={i} className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-medium text-gray-700 shadow-sm">
                     {h.symbol}
                   </span>
                 ))}
@@ -450,15 +450,15 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
 
           {/* Client-Specific News */}
           <div>
-            <p className="text-xs font-medium text-gray-700 mb-2">News Affecting Your Holdings</p>
+            <p className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">News Affecting Your Holdings</p>
             {clientNews.length > 0 ? (
               <div className="space-y-2">
                 {clientNews.map((news, i) => (
-                  <div key={i} className={`bg-white border-l-4 ${getSentimentColor(news.sentiment)} rounded-r-lg p-2`}>
+                  <div key={i} className={`bg-white border-l-4 ${getSentimentColor(news.sentiment)} border border-gray-100 rounded-r-lg p-2 shadow-sm`}>
                     <p className="text-xs text-gray-800">{news.headline}</p>
                     <div className="flex items-center gap-2 mt-1">
                       {news.symbols?.map((sym, j) => (
-                        <span key={j} className="px-1.5 py-0.5 bg-blue-50 text-blue-700 text-xs rounded">
+                        <span key={j} className="px-1.5 py-0.5 bg-slate-100 text-[#003366] text-xs rounded font-medium">
                           {sym}
                         </span>
                       ))}
@@ -489,7 +489,7 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
             <button
               onClick={handleGenerateProposal}
               disabled={actionsLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg transition flex items-center justify-center gap-2 text-sm"
+              className="w-full bg-[#003366] hover:bg-[#002244] disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg transition flex items-center justify-center gap-2 text-sm shadow-sm"
             >
               {actionsLoading ? (
                 <>
@@ -522,7 +522,7 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
                 </div>
                 <button
                   onClick={() => { setProposal(null); setActionsError(null); }}
-                  className="text-xs text-blue-600 hover:text-blue-800"
+                  className="text-xs text-[#003366] hover:text-[#002244] font-medium"
                 >
                   New Analysis
                 </button>
@@ -533,7 +533,7 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
                 {proposal.actions.map((action) => (
                   <div 
                     key={action.id}
-                    className={`border rounded-lg overflow-hidden ${
+                    className={`border rounded-lg overflow-hidden shadow-sm ${
                       action.status === 'APPROVED' 
                         ? 'border-green-200 bg-green-50' 
                         : action.metrics.triggered 
@@ -619,11 +619,11 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
   const renderAuditTab = () => (
     <div className="p-3">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-medium text-gray-700">Recent Activity</p>
+        <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Recent Activity</p>
         <button 
           onClick={fetchAuditLogs}
           disabled={auditLoading}
-          className="text-xs text-blue-600 hover:text-blue-800 disabled:text-gray-400"
+          className="text-xs text-[#003366] hover:text-[#002244] font-medium disabled:text-gray-400"
         >
           {auditLoading ? '...' : 'Refresh'}
         </button>
@@ -636,7 +636,7 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
           </div>
         ) : (
           auditLogs.map((log, idx) => (
-            <div key={`${log.timestamp}-${idx}`} className="bg-white border border-gray-100 rounded-lg p-2">
+            <div key={`${log.timestamp}-${idx}`} className="bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
               <div className="flex items-start gap-2">
                 <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${getAuditColor(log.action)}`}>
                   {log.action}
@@ -664,7 +664,7 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`fixed bottom-4 right-4 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all z-50 ${
-          isOpen ? 'bg-gray-700 hover:bg-gray-800' : 'bg-blue-600 hover:bg-blue-700'
+          isOpen ? 'bg-slate-700 hover:bg-slate-800' : 'bg-[#003366] hover:bg-[#002244]'
         }`}
       >
         {isOpen ? (
@@ -680,17 +680,19 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
       {isOpen && (
         <div className="fixed bottom-20 right-4 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-40">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3">
+          <div className="bg-[#003366] px-4 py-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🤖</span>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center">
+                  <span className="text-lg">🤖</span>
+                </div>
                 <div>
                   <h2 className="text-white font-semibold text-sm">ClientWorks Copilot</h2>
-                  <p className="text-blue-100 text-xs">AI-powered advisor assistant</p>
+                  <p className="text-white/70 text-xs">AI-powered advisor assistant</p>
                 </div>
               </div>
               {selectedClientId && (
-                <span className="px-2 py-0.5 bg-white/20 text-white text-xs rounded-full">
+                <span className="px-2 py-0.5 bg-emerald-500 text-white text-xs rounded-full font-medium">
                   Client Active
                 </span>
               )}
@@ -698,7 +700,7 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
           </div>
 
           {/* Tab Bar */}
-          <div className="flex border-b border-gray-200">
+          <div className="flex border-b border-gray-200 bg-slate-50">
             {[
               { id: 'market' as Tab, label: 'Market', icon: '📈' },
               { id: 'client' as Tab, label: 'Insights', icon: '👤' },
@@ -708,10 +710,10 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 py-2 text-xs font-medium transition-colors ${
+                className={`flex-1 py-2.5 text-xs font-medium transition-colors ${
                   activeTab === tab.id
-                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    ? 'text-[#003366] border-b-2 border-[#003366] bg-white'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                 }`}
               >
                 <span className="mr-1">{tab.icon}</span>
@@ -733,7 +735,7 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
       {/* Confirmation Modal */}
       {confirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4 p-5">
+          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full mx-4 p-5 border border-gray-200">
             <h3 className="text-base font-semibold text-gray-900 mb-2">Confirm Approval</h3>
             <p className="text-sm text-gray-600 mb-3">
               Approve: <strong>{confirmModal.action.title}</strong>
@@ -744,14 +746,14 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
             <div className="flex gap-2">
               <button
                 onClick={() => setConfirmModal(null)}
-                className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50"
+                className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleApprove(confirmModal.action)}
                 disabled={approving}
-                className="flex-1 px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700 disabled:bg-gray-400"
+                className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 disabled:bg-gray-400 font-medium shadow-sm"
               >
                 {approving ? 'Processing...' : 'Approve'}
               </button>
@@ -763,7 +765,7 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
       {/* Feedback Modal */}
       {feedbackModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4 p-5">
+          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full mx-4 p-5 border border-gray-200">
             <h3 className="text-base font-semibold text-gray-900 mb-2">Request Different Approach</h3>
             <p className="text-sm text-gray-600 mb-3">
               Regenerate: <strong>{feedbackModal.action.title}</strong>
@@ -777,7 +779,7 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
                 placeholder="e.g., Too aggressive, need more conservative approach..."
-                className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#003366] focus:border-[#003366]"
                 rows={2}
               />
             </div>
@@ -785,14 +787,14 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
             <div className="flex gap-2">
               <button
                 onClick={() => { setFeedbackModal(null); setFeedbackText(''); }}
-                className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50"
+                className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleRegenerate(feedbackModal.action)}
                 disabled={regenerating === feedbackModal.action.id}
-                className="flex-1 px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:bg-gray-400"
+                className="flex-1 px-3 py-2 bg-[#003366] text-white rounded-lg text-sm hover:bg-[#002244] disabled:bg-gray-400 font-medium shadow-sm"
               >
                 {regenerating === feedbackModal.action.id ? 'Regenerating...' : '🔄 Regenerate'}
               </button>
