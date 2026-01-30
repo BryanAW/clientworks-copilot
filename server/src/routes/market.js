@@ -2,6 +2,7 @@ import express from 'express'
 import Parser from 'rss-parser'
 import crypto from 'crypto'
 import { logAudit } from '../utils/audit.js'
+import { isOpenAIEnabled, safeChatCompletion } from '../utils/openai.js'
 import {
   MARKET_SUMMARY_SYSTEM_PROMPT,
   MARKET_SUMMARY_USER_PROMPT,
@@ -208,7 +209,7 @@ function generateDeterministicSignals(headlines) {
 }
 
 // ============================================================================
-// LLM SUMMARIZATION (When OPENAI_API_KEY is available)
+// LLM SUMMARIZATION (When OpenAI is available)
 // ============================================================================
 
 /**
@@ -216,42 +217,34 @@ function generateDeterministicSignals(headlines) {
  * Returns null on failure (caller should fall back to deterministic)
  */
 async function generateLLMSignals(headlines) {
-  const apiKey = process.env.OPENAI_API_KEY
-  
-  if (!apiKey || apiKey.trim() === '') {
-    return null // No API key, use fallback
+  // Check if OpenAI is enabled via centralized client
+  if (!isOpenAIEnabled()) {
+    return null // Not configured, use fallback
   }
   
   try {
-    // Dynamic import to avoid issues when key not present
-    const { default: OpenAI } = await import('openai')
-    const openai = new OpenAI({ apiKey })
-    
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Cost-effective for summarization
-      messages: [
-        { role: 'system', content: MARKET_SUMMARY_SYSTEM_PROMPT },
-        { role: 'user', content: MARKET_SUMMARY_USER_PROMPT(headlines) }
-      ],
-      temperature: 0.3, // Lower temperature for more consistent output
-      max_tokens: 1500
+    const content = await safeChatCompletion({
+      systemPrompt: MARKET_SUMMARY_SYSTEM_PROMPT,
+      userPrompt: MARKET_SUMMARY_USER_PROMPT(headlines),
+      temperature: 0.3,
+      maxTokens: 1500
     })
     
-    const content = response.choices[0]?.message?.content
     if (!content) {
-      throw new Error('Empty response from LLM')
+      return null // Request failed, use fallback
     }
     
     const signals = parseLLMResponse(content, headlines)
     if (!signals || signals.length === 0) {
-      throw new Error('Failed to parse LLM response')
+      console.warn('[Market] Failed to parse LLM response, using fallback')
+      return null
     }
     
-    console.log(`[LLM] Successfully generated ${signals.length} market signals`)
+    console.log(`[Market] Generated ${signals.length} AI-enhanced market signals`)
     return signals
     
   } catch (err) {
-    console.warn(`[LLM] Failed to generate signals: ${err.message}`)
+    console.warn(`[Market] LLM summarization failed: ${err.message}`)
     return null // Fall back to deterministic
   }
 }

@@ -243,8 +243,10 @@ export default function AgentPanel({ clientId, onActionApproved }: Props) {
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="text-sm font-medium text-gray-900">{action.title}</h3>
                           {getStatusBadge(action)}
-                          {action.usedLLM && (
-                            <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-xs rounded">AI</span>
+                          {action.usedLLM ? (
+                            <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-xs rounded">AI-enhanced</span>
+                          ) : (
+                            <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-xs rounded">Deterministic</span>
                           )}
                         </div>
                         <p className="text-xs text-gray-600 mt-1 line-clamp-2">{action.whyNow}</p>

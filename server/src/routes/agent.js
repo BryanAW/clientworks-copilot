@@ -1,6 +1,7 @@
 import express from 'express'
 import crypto from 'crypto'
 import { logAudit } from '../utils/audit.js'
+import { isOpenAIEnabled, safeChatCompletion } from '../utils/openai.js'
 import { analyzePortfolio, TARGET_ALLOCATIONS } from '../utils/portfolioAnalytics.js'
 import {
   ACTION_COMPOSER_SYSTEM_PROMPT,
@@ -51,14 +52,9 @@ function generateActionId(clientId, actionType) {
 // ============================================================================
 
 async function composeAction(actionType, data, marketSignals) {
-  const openaiKey = process.env.OPENAI_API_KEY
-  
-  // If we have an OpenAI key, try to use it for phrasing
-  if (openaiKey && openaiKey.startsWith('sk-')) {
+  // Check if OpenAI is enabled via centralized client
+  if (isOpenAIEnabled()) {
     try {
-      const OpenAI = (await import('openai')).default
-      const openai = new OpenAI({ apiKey: openaiKey })
-      
       let userPrompt
       switch (actionType) {
         case 'REBALANCE':
@@ -74,21 +70,25 @@ async function composeAction(actionType, data, marketSignals) {
           throw new Error('Unknown action type')
       }
       
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: ACTION_COMPOSER_SYSTEM_PROMPT },
-          { role: 'user', content: userPrompt }
-        ],
+      const response = await safeChatCompletion({
+        systemPrompt: ACTION_COMPOSER_SYSTEM_PROMPT,
+        userPrompt,
         temperature: 0.3,
-        max_tokens: 500
+        maxTokens: 500
       })
       
-      const response = completion.choices[0]?.message?.content || ''
-      return parseActionResponse(response, actionType, data)
+      if (response) {
+        const parsed = parseActionResponse(response, actionType, data)
+        if (parsed.success) {
+          return parsed
+        }
+      }
+      
+      // If we get here, LLM response was invalid
+      console.warn(`[Agent] LLM response invalid for ${actionType}, using fallback`)
       
     } catch (err) {
-      console.warn('[Agent] LLM call failed, using fallback:', err.message)
+      console.warn(`[Agent] LLM phrasing failed for ${actionType}: ${err.message}`)
     }
   }
   

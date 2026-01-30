@@ -155,9 +155,13 @@ export default function CopilotPopup() {
                   <span>
                     {summary.cached ? 'Cached' : 'Fresh'} • {formatTime(summary.fetchedAt)}
                   </span>
-                  {summary.usedLLM && (
+                  {summary.usedLLM ? (
                     <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
-                      AI Enhanced
+                      AI-enhanced
+                    </span>
+                  ) : (
+                    <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                      Deterministic
                     </span>
                   )}
                 </div>
