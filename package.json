@@ -1,0 +1,25 @@
+{
+  "name": "clientworks-copilot",
+  "version": "0.1.0",
+  "description": "Financial advisor AI copilot - hackathon demo",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend & npm run dev --workspace=server",
+    "frontend": "npm run dev --workspace=frontend",
+    "backend": "npm run dev --workspace=server",
+    "build": "npm run build --workspace=frontend",
+    "start": "npm start --workspace=server"
+  },
+  "workspaces": [
+    "frontend",
+    "server"
+  ],
+  "keywords": [
+    "financial-advisor",
+    "copilot",
+    "portfolio-management",
+    "hackathon"
+  ],
+  "author": "",
+  "license": "MIT"
+}

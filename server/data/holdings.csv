@@ -1,0 +1,11 @@
+client_id,symbol,name,shares,price_per_share,current_value,allocation_percentage,asset_class,sector,last_updated
+1,AAPL,Apple Inc,500,195.50,97750,35,Equity,Technology,2025-01-30
+1,MSFT,Microsoft Corp,300,420.25,126075,25,Equity,Technology,2025-01-30
+1,VTI,Vanguard Total Stock Market,1200,245.00,294000,40,Equity,Diversified,2025-01-30
+2,JNJ,Johnson & Johnson,400,160.75,64300,22,Equity,Healthcare,2025-01-30
+2,PG,Procter & Gamble,600,165.20,99120,33,Equity,Consumer,2025-01-30
+2,BND,Vanguard Total Bond Market,5000,98.50,492500,45,Fixed Income,Bonds,2025-01-30
+3,TSLA,Tesla Inc,200,250.75,50150,8,Equity,Technology,2025-01-30
+3,NVDA,NVIDIA Corp,150,875.00,131250,20,Equity,Technology,2025-01-30
+3,SPY,SPDR S&P 500,800,590.25,472200,60,Equity,Index,2025-01-30
+3,GLD,SPDR Gold,300,185.40,55620,12,Commodity,Precious Metals,2025-01-30

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "1",
+    "name": "Margaret Chen",
+    "email": "margaret.chen@example.com",
+    "phone": "+1-555-0101",
+    "aum": 2500000,
+    "status": "active",
+    "risk_profile": "moderate",
+    "created_at": "2024-01-15",
+    "last_contact": "2025-01-28"
+  },
+  {
+    "id": "2",
+    "name": "James Morrison",
+    "email": "james.morrison@example.com",
+    "phone": "+1-555-0102",
+    "aum": 1800000,
+    "status": "active",
+    "risk_profile": "conservative",
+    "created_at": "2023-06-10",
+    "last_contact": "2025-01-27"
+  },
+  {
+    "id": "3",
+    "name": "Sarah Williams",
+    "email": "sarah.williams@example.com",
+    "phone": "+1-555-0103",
+    "aum": 3200000,
+    "status": "active",
+    "risk_profile": "aggressive",
+    "created_at": "2024-03-22",
+    "last_contact": "2025-01-29"
+  }
+]
