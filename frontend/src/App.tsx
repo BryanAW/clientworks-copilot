@@ -1,12 +1,18 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import ClientProfilePanel from './components/ClientProfilePanel'
 import HoldingsTable from './components/HoldingsTable'
 import AgentPanel from './components/AgentPanel'
-import AuditLogPanel from './components/AuditLogPanel'
+import AuditLogPanel, { AuditLogPanelRef } from './components/AuditLogPanel'
 import CopilotPopup from './components/CopilotPopup'
 
 function App() {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
+  const auditLogRef = useRef<AuditLogPanelRef>(null)
+
+  const handleActionApproved = () => {
+    // Refresh audit log when an action is approved
+    auditLogRef.current?.refresh()
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -42,8 +48,8 @@ function App() {
 
           {/* Right Panel */}
           <div className="lg:col-span-1 space-y-6">
-            <AgentPanel clientId={selectedClientId} />
-            <AuditLogPanel />
+            <AgentPanel clientId={selectedClientId} onActionApproved={handleActionApproved} />
+            <AuditLogPanel ref={auditLogRef} />
           </div>
         </div>
       </main>

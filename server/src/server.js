@@ -3,6 +3,7 @@ import cors from 'cors'
 import clientRoutes from './routes/clients.js'
 import marketRoutes from './routes/market.js'
 import agentRoutes from './routes/agent.js'
+import auditRoutes from './routes/audit.js'
 
 const app = express()
 
@@ -14,6 +15,7 @@ app.use(express.json())
 app.use('/api/clients', clientRoutes)
 app.use('/api/market', marketRoutes)
 app.use('/api/agent', agentRoutes)
+app.use('/api/audit', auditRoutes)
 
 // Health check
 app.get('/health', (req, res) => {
