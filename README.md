@@ -1,154 +1,146 @@
-# ClientWorks Advisor Copilot
+# Visor
 
-A lightweight, demo-ready financial advisor AI platform for hackathons.
+**AI-Powered Assistant for Financial Advisors**
 
-## 🚀 Quick Start (1 min)
+🏆 *Winner — LPL Financial Hackathon 2026*
 
-```bash
-cd clientworks-copilot
-npm install
-npm run backend    # Terminal 1
-npm run frontend   # Terminal 2
-# Open http://localhost:5173
-```
+---
 
 ## Overview
 
-**ClientWorks Advisor Copilot** is a proof-of-concept system showing how AI assists financial advisors with portfolio recommendations. The demo ingests client profiles, holdings, and market data, then uses an AI agent to propose rebalancing strategies.
+Visor helps financial advisors work smarter. It's a lightweight popup that sits inside existing advisor platforms, surfacing personalized insights and AI-driven recommendations without disrupting workflow.
 
-### Problem Statement
-Financial advisors face:
-- **Time pressure**: Manually analyzing portfolios is tedious
-- **Cognitive overload**: Tracking many clients across market conditions
-- **Inconsistency**: Recommendations vary based on fatigue
+We built Visor to solve a real problem: advisors juggle hundreds of clients, mountains of market news, and strict compliance requirements. Visor filters the noise, highlights what matters for each client, and suggests actions—while keeping the advisor in control.
 
-### Demo Flow (3 minutes)
-1. **Select client** (Margaret Chen, $2.5M AUM)
-2. **View holdings** (60% tech concentration)
-3. **Generate proposal** (AI-powered rebalancing)
-4. **Approve & execute** (Mock trades logged)
-5. **Check audit trail** (Compliance tracking)
+### What It Does
+
+- **Client-specific news** — Only shows headlines relevant to that client's holdings
+- **Market snapshot** — Quick view of indices and key market movers
+- **Smart recommendations** — AI analyzes the portfolio and suggests rebalancing, risk adjustments, etc.
+- **Advisor approval required** — Nothing happens without human sign-off
+- **Audit logging** — Every recommendation and action is documented for compliance
+
+---
+
+## Demo
+
+The repo includes a simulated advisor dashboard to show how Visor integrates into real workflows. The popup is the product—the dashboard is just context.
 
 ---
 
 ## Tech Stack
 
-**Frontend**: React 18 + TypeScript + Vite + Tailwind CSS  
-**Backend**: Node.js + Express + CORS  
-**Data**: JSON + CSV (no database)  
-**Audit**: JSONL logging  
+**Frontend:** React 18 + TypeScript + Vite + Tailwind CSS  
+**Backend:** Node.js + Express  
+**AI:** OpenAI GPT-4o-mini (with deterministic fallback)  
+**News:** Live RSS feeds from Bloomberg, Reuters, CNBC, MarketWatch
+
+We used Claude as a development assistant during the hackathon for brainstorming architecture decisions and accelerating implementation.
 
 ---
 
-## Architecture
+## Quick Start
 
-```
-React UI (5173)
-  ├── ClientProfilePanel (select client)
-  ├── HoldingsTable (view portfolio)
-  ├── AgentPanel (generate/approve)
-  └── AuditLogPanel (track actions)
-        ↓ HTTP/JSON
-Express API (3000)
-  ├── GET  /api/clients
-  ├── GET  /api/clients/:id
-  ├── GET  /api/clients/:id/holdings
-  ├── POST /api/agent/propose
-  ├── POST /api/agent/approve
-  └── GET  /api/market/headlines
-        ↓ Read
-Mock Data
-  ├── clients.json (3 clients)
-  ├── holdings.csv (10 positions)
-  ├── notes.json (advisor notes)
-  └── audit.jsonl (activity log)
-```
+### Prerequisites
 
----
+- Node.js 18+
+- OpenAI API key (optional—works without it)
 
-## Project Structure
-
-```
-clientworks-copilot/
-├── frontend/                  # React + Vite
-│   └── src/
-│       ├── components/        # 4 UI panels
-│       ├── App.tsx            # Main layout
-│       └── main.tsx           # Entry point
-├── server/                    # Express backend
-│   ├── src/
-│   │   ├── routes/            # API endpoints
-│   │   ├── utils/audit.js     # Audit logging
-│   │   └── server.js          # Express app
-│   └── data/                  # Mock data (JSON + CSV)
-├── README.md & QUICKSTART.md  # Documentation
-└── package.json               # Root workspace
-```
-
----
-
-## Setup & Run
-
-**Prerequisites**: Node.js 18+
+### Setup
 
 ```bash
+git clone https://github.com/BryanAW/clientworks-copilot.git
+cd clientworks-copilot
 npm install
+```
 
+Add your API key (optional):
+```bash
+# server/.env
+OPENAI_API_KEY=sk-...
+```
+
+### Run
+
+```bash
 # Terminal 1
-npm run backend   # http://localhost:3000
+cd server && npm start
 
 # Terminal 2
-npm run frontend  # http://localhost:5173
+cd frontend && npm run dev
+```
+
+Then open [http://localhost:5173](http://localhost:5173).
+
+---
+
+## How It Works
+
+```
+Advisor selects client
+        ↓
+Visor fetches holdings + relevant news
+        ↓
+Advisor clicks "Generate Proposals"
+        ↓
+Backend builds prompt → sends to OpenAI
+        ↓
+AI returns structured recommendations
+        ↓
+Advisor reviews, approves (or regenerates)
+        ↓
+Action logged to audit trail
 ```
 
 ---
 
-## API Reference
+## Project Layout
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/clients` | GET | List all clients |
-| `/api/clients/:id` | GET | Client details |
-| `/api/clients/:id/holdings` | GET | Portfolio breakdown |
-| `/api/market/headlines` | GET | Market headlines |
-| `/api/agent/propose` | POST | Generate proposal |
-| `/api/agent/approve` | POST | Execute proposal |
-
----
-
-## 3-Minute Demo
-
-1. Select **Margaret Chen** from client list
-2. View her holdings (60% tech concentration)
-3. Click **"Generate Proposal"** to see AI recommendation
-4. Click **"Approve"** to execute mock trades
-5. Check **audit log** for compliance trail
+```
+├── frontend/
+│   └── src/
+│       ├── components/
+│       │   └── CopilotPopup.tsx   ← The main Visor popup
+│       └── App.tsx                ← Simulated advisor dashboard
+│
+├── server/
+│   └── src/
+│       ├── routes/                ← API endpoints
+│       ├── prompts/               ← OpenAI prompt templates
+│       └── data/                  ← Mock client data
+│
+└── README.md
+```
 
 ---
 
-## Development
+## API Overview
 
-- **Hot reload**: Changes auto-reload (Vite + Node --watch)
-- **Debugging**: Check `server/logs/audit.jsonl` for audit trail
-- **Reset**: Restart servers to reset mock data
-
----
-
-## TODO Comments
-
-Every file has `// TODO:` markers showing what needs implementation:
-- Real database (replace JSON)
-- Market data APIs
-- AI agent logic
-- Authentication
-- Broker integration
+| Endpoint | What it does |
+|----------|--------------|
+| `GET /api/clients/:id/holdings` | Fetch client portfolio |
+| `GET /api/market/summary` | Market indices + headlines |
+| `POST /api/market/client-news` | News filtered by holdings |
+| `POST /api/actions/generate` | Generate AI recommendations |
+| `POST /api/actions/approve` | Log approved action |
+| `GET /api/audit` | Compliance audit trail |
 
 ---
 
-## Disclaimer
+## Why We Built This
 
-⚠️ **Simulation only** — No real trades executed. Not financial advice. Mock data throughout.
+Financial advisors spend too much time on manual research and not enough time with clients. Visor automates the tedious parts—scanning news, checking portfolio drift, drafting recommendations—so advisors can focus on relationships.
 
-For questions, check inline TODO comments in the code explaining next steps.
+The key insight: advisors don't want AI making decisions for them. They want AI doing the legwork so *they* can make better decisions faster. That's why everything in Visor requires explicit approval.
 
-Happy hacking! 🚀
+---
+
+## License
+
+Built for LPL Financial Hackathon 2026.
+
+---
+
+## Team
+
+Made with ☕ and late nights.
