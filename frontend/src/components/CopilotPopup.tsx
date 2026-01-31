@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import axios from 'axios'
+import VisorLogo from '../assets/VisorLogo.png'
 
 // ============================================================================
 // TYPES
@@ -127,10 +128,9 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([])
   const [auditLoading, setAuditLoading] = useState(false)
 
-  // Auto-open popup when client is selected
+  // Reset state when client changes (but don't auto-open popup)
   useEffect(() => {
     if (selectedClientId) {
-      setIsOpen(true)
       setActiveTab('client')
       setProposal(null)
       setActionsError(null)
@@ -663,8 +663,10 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
       {/* Floating Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-4 right-4 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all z-50 ${
-          isOpen ? 'bg-slate-700 hover:bg-slate-800' : 'bg-[#003366] hover:bg-[#002244]'
+        className={`fixed bottom-4 right-4 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all z-50 border-2 ${
+          isOpen 
+            ? 'bg-slate-700 hover:bg-slate-800 border-slate-700' 
+            : 'bg-white hover:bg-slate-50 border-[#003366]'
         }`}
       >
         {isOpen ? (
@@ -672,7 +674,7 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
-          <span className="text-2xl">🤖</span>
+          <img src={VisorLogo} alt="Visor" className="w-8 h-8 object-contain" />
         )}
       </button>
 
@@ -683,11 +685,11 @@ export default function CopilotPopup({ selectedClientId, onActionApproved }: Pro
           <div className="bg-[#003366] px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center">
-                  <span className="text-lg">🤖</span>
+                <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center p-1">
+                  <img src={VisorLogo} alt="Visor" className="w-full h-full object-contain" />
                 </div>
                 <div>
-                  <h2 className="text-white font-semibold text-sm">ClientWorks Copilot</h2>
+                  <h2 className="text-white font-semibold text-sm">Visor</h2>
                   <p className="text-white/70 text-xs">AI-powered advisor assistant</p>
                 </div>
               </div>

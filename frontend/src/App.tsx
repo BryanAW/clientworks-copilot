@@ -2,6 +2,7 @@ import { useState } from 'react'
 import ClientProfilePanel from './components/ClientProfilePanel'
 import HoldingsTable from './components/HoldingsTable'
 import CopilotPopup from './components/CopilotPopup'
+import VisorLogo from './assets/VisorLogo.png'
 
 function App() {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
@@ -34,8 +35,8 @@ function App() {
             <div className="flex items-center gap-4 text-sm">
               <span className="text-white/70 hidden sm:block">{currentDate}</span>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 bg-emerald-500 text-white text-xs rounded-full font-medium">
-                  🤖 AI Copilot
+                <span className="px-2 py-0.5 bg-emerald-500 text-white text-xs rounded-full font-medium flex items-center gap-1">
+                  <img src={VisorLogo} alt="Visor" className="w-4 h-4 object-contain" /> Visor
                 </span>
               </div>
               <div className="flex items-center gap-2 pl-4 border-l border-white/20">
@@ -155,7 +156,7 @@ function App() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Select a Client</h3>
                 <p className="text-gray-500 mb-4">Choose a client from the list to view their portfolio holdings and details</p>
                 <p className="text-xs text-gray-400">
-                  💡 Tip: Click the <span className="font-medium">🤖</span> button in the bottom-right corner for AI-powered insights
+                  💡 Tip: Click the <span className="font-medium">Visor</span> button in the bottom-right corner for AI-powered insights
                 </p>
               </div>
             )}
